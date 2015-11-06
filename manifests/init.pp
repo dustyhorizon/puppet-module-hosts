@@ -8,12 +8,10 @@ class hosts (
   $enable_ipv6_localhost = true,
   $enable_fqdn_entry     = true,
   $use_fqdn              = true,
+  $fqdn_ip_address       = $::ipaddress,
   $fqdn_host_aliases     = $::hostname,
-  $localhost_aliases     = ['localhost',
-                            'localhost4',
-                            'localhost4.localdomain4'],
-  $localhost6_aliases    = ['localhost6',
-                            'localhost6.localdomain6'],
+  $localhost_aliases     = ['localhost', 'localhost4', 'localhost4.localdomain4'],
+  $localhost6_aliases    = ['localhost6', 'localhost6.localdomain6'],
   $purge_hosts           = false,
   $target                = '/etc/hosts',
   $host_entries          = undef,
@@ -93,11 +91,11 @@ class hosts (
   if $fqdn_entry_enabled == true {
     $fqdn_ensure          = 'present'
     $my_fqdn_host_aliases = $fqdn_host_aliases
-    $fqdn_ip              = $::ipaddress
+    $fqdn_ip              = $fqdn_ip_address
   } else {
     $fqdn_ensure          = 'absent'
     $my_fqdn_host_aliases = []
-    $fqdn_ip              = $::ipaddress
+    $fqdn_ip              = $fqdn_ip_address
   }
 
   Host {
@@ -121,7 +119,7 @@ class hosts (
   }
 
   if $use_fqdn_real == true {
-    @@host { $::fqdn:
+    host { $::fqdn:
       ensure       => $fqdn_ensure,
       host_aliases => $my_fqdn_host_aliases,
       ip           => $fqdn_ip,
@@ -131,10 +129,6 @@ class hosts (
       # collect all the exported Host resources
       true:  {
         Host <<| |>>
-      }
-      # only collect the exported entry above
-      default: {
-        Host <<| title == $::fqdn |>>
       }
     }
   }
